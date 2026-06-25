@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
-import { getUser } from "@/lib/get-user"
+import { getUserBasic } from "@/lib/get-user-optimized"
 import { prismadb } from "@/lib/prisma"
-import { getProjectWithDetails } from "@/actions/projects"
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -13,41 +12,118 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params
     const projectId = id
 
-    // Check if user has access to the project
-    const membership = await prismadb.projectMember.findFirst({
-      where: {
-        projectId,
-        userId: user.id,
-      },
-    })
+    console.log("Fetching project with ID:", projectId, "for user:", user.id)
 
-    const isCreator = await prismadb.project.findFirst({
+    // Get project with sprints and tasks using direct Prisma query
+    const project = await prismadb.project.findFirst({
       where: {
         id: projectId,
-        createdById: user.id,
+        OR: [
+          { createdById: user.id },
+          { members: { some: { userId: user.id } } }
+        ]
       },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                role: true
+              }
+            }
+          }
+        },
+        sprints: {
+          include: {
+            tasks: {
+              include: {
+                assignees: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true
+                      }
+                    }
+                  }
+                },
+                creator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true
+                  }
+                }
+              },
+              orderBy: {
+                position: 'asc'
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          _count: {
+            select: {
+              tasks: true
+            }
+          }
+        },
+        _count: {
+          select: {
+            members: true,
+            sprints: {
+              where: {
+                status: "ACTIVE"
+              }
+            }
+          }
+        }
+      }
     })
 
-    if (!membership && !isCreator) {
-      return NextResponse.json({ error: "Not authorized to view this project" }, { status: 403 })
-    }
-
-    const project = await getProjectWithDetails(projectId)
+    console.log("Project query result:", project ? "Found project" : "Project not found")
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ project })
+    // Transform data to include computed stats
+    const projectWithStats = {
+      ...project,
+      stats: {
+        totalMembers: project.members?.length || 0,
+        activeSprints: project.sprints?.filter(sprint => sprint.status === "ACTIVE").length || 0,
+        totalTasks: project.sprints?.reduce((acc, sprint) => acc + (sprint._count?.tasks || 0), 0) || 0,
+        completionPercentage: 0 // Will be calculated based on task status in the future
+      }
+    }
+
+    return NextResponse.json({ data: projectWithStats, success: true })
   } catch (error) {
-    console.error("Error fetching project:", error)
+    console.error("Error fetching project:", error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: "Failed to fetch project" }, { status: 500 })
   }
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -89,7 +165,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: updateData,
     })
 
-    return NextResponse.json({ project })
+    return NextResponse.json({ data: project, success: true })
   } catch (error) {
     console.error("Error updating project:", error)
     return NextResponse.json({ error: "Failed to update project" }, { status: 500 })
@@ -98,7 +174,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

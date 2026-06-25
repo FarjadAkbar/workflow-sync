@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       },
     })
 
-    return NextResponse.json({ sprints })
+    return NextResponse.json({ data: sprints, success: true })
   } catch (error) {
     console.error("Error fetching sprints:", error)
     return NextResponse.json({ error: "Failed to fetch sprints" }, { status: 500 })
@@ -97,7 +97,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       },
     })
 
-    return NextResponse.json({ sprint }, { status: 201 })
+    return NextResponse.json({ data: sprint, success: true }, { status: 201 })
   } catch (error) {
     console.error("Error creating sprint:", error)
     return NextResponse.json({ error: "Failed to create sprint" }, { status: 500 })

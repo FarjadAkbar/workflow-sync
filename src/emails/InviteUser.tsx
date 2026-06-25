@@ -30,7 +30,7 @@ export const InviteUserEmail = ({
   invitedByUsername,
   invitedUserPassword,
 }: VercelInviteUserEmailProps) => {
-  const previewText = `You have been invited by ${invitedByUsername} to Dolce frutti app`;
+  const previewText = `You have been invited by ${invitedByUsername} to WorkSync`;
 
   return (
     <Html>

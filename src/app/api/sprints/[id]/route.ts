@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
-import { getUser } from "@/lib/get-user"
+import { getUserBasic } from "@/lib/get-user-optimized"
 import { prismadb } from "@/lib/prisma"
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -12,63 +12,112 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const sprintId = id
 
-    // Get sprint with project info
-    const sprint = await prismadb.sprint.findUnique({
-      where: { id: sprintId },
+    // Get sprint with tasks using direct Prisma query
+    const sprint = await prismadb.sprint.findFirst({
+      where: {
+        id: sprintId,
+        project: {
+          OR: [
+            { createdById: user.id },
+            { members: { some: { userId: user.id } } }
+          ]
+        }
+      },
       include: {
         project: {
           select: {
             id: true,
             name: true,
-            members: {
-              where: {
-                userId: user.id,
-              },
-            },
-          },
+            description: true,
+            status: true,
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          }
         },
-      },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tasks: {
+          include: {
+            assignees: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    role: true
+                  }
+                }
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            },
+            assigned_section: {
+              select: {
+                id: true,
+                name: true,
+                board: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            },
+            _count: {
+              select: {
+                subtasks: true,
+                checklists: true,
+                comments: true
+              }
+            }
+          },
+          orderBy: [
+            { priority: 'desc' },
+            { position: 'asc' }
+          ]
+        },
+        _count: {
+          select: {
+            tasks: true
+          }
+        }
+      }
     })
 
     if (!sprint) {
       return NextResponse.json({ error: "Sprint not found" }, { status: 404 })
     }
 
-    // Check if user has access to the project
-    const hasAccess =
-      sprint.project.members.length > 0 ||
-      (await prismadb.project.findFirst({
-        where: {
-          id: sprint.projectId,
-          createdById: user.id,
-        },
-      }))
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: "Not authorized to view this sprint" }, { status: 403 })
-    }
-
-    // Get tasks count
-    const totalTasks = await prismadb.tasks.count({
-      where: { sprintId },
-    })
-
-    const completedTasks = await prismadb.tasks.count({
-      where: {
-        sprintId,
-        taskStatus: "COMPLETE",
-      },
-    })
-
     return NextResponse.json({
-      sprint: {
+      data: {
         ...sprint,
         stats: {
-          totalTasks,
-          completedTasks,
-          completionPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+          totalTasks: sprint._count.tasks,
+          completedTasks: sprint._count.completedTasks,
+          completionPercentage: sprint._count.tasks > 0 ? Math.round((sprint._count.completedTasks / sprint._count.tasks) * 100) : 0,
         },
       },
+      success: true
     })
   } catch (error) {
     console.error("Error fetching sprint:", error)
@@ -78,7 +127,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -141,7 +190,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

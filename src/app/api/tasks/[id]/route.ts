@@ -1,116 +1,244 @@
 import { NextResponse } from "next/server"
-import { getUser } from "@/lib/get-user"
+import { getUserBasic } from "@/lib/get-user-optimized"
 import { prismadb } from "@/lib/prisma"
-import { getTaskDetails } from "@/actions/projects"
-import { deleteFileFromDrive } from "@/lib/google-drive"
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { id } = await params;
+    const { id } = await params
     const taskId = id
 
-    // Get task details
-    const task = await getTaskDetails(taskId)
-
-    if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 })
-    }
-
-    // Check if user has access to the task
-    const isAssigned = task.assignees ? task.assignees.some((assignee) => assignee.id === user.id) : false
-    const isCreator = task.createdBy === user.id
-
-    // If task is in a sprint, check project membership
-    let hasProjectAccess = false
-    if (task.sprint) {
-      const projectMember = await prismadb.projectMember.findFirst({
-        where: {
-          projectId: task.sprint.projectId,
-          userId: user.id,
-        },
-      })
-
-      const isProjectCreator = await prismadb.project.findFirst({
-        where: {
-          id: task.sprint.projectId,
-          createdById: user.id,
-        },
-      })
-
-      hasProjectAccess = !!projectMember || !!isProjectCreator
-    }
-
-    if (!isAssigned && !isCreator && !hasProjectAccess && user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Not authorized to view this task" }, { status: 403 })
-    }
-
-    // Filter private feedback for non-admins
-    if (user.role !== "ADMIN" && task.task_feedback) {
-      task.task_feedback = task.task_feedback.filter((feedback) => !feedback.isPrivate || feedback.userId === user.id)
-    }
-
-    return NextResponse.json({ task })
-  } catch (error) {
-    console.error("Error fetching task:", error)
-    return NextResponse.json({ error: "Failed to fetch task" }, { status: 500 })
-  }
-}
-
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const user = await getUser()
-    if (!user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const { id } = await params;
-    const taskId = id
-    const body = await req.json()
-
-    // Get task
-    const task = await prismadb.tasks.findUnique({
-      where: { id: taskId },
-      include: {
-        assignees: true,
-        sprint: true,
+    // Get task with all details using direct Prisma query
+    const task = await prismadb.tasks.findFirst({
+      where: {
+        id: taskId,
+        OR: [
+          { createdBy: user.id },
+          { assignees: { some: { userId: user.id } } },
+          { 
+            sprint: {
+              project: {
+                members: { some: { userId: user.id } }
+              }
+            }
+          }
+        ]
       },
+      include: {
+        assignees: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                role: true
+              }
+            }
+          }
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        sprint: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                members: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        assigned_section: {
+          include: {
+            board: {
+              select: {
+                id: true,
+                name: true,
+                project: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        subtasks: {
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        },
+        checklists: {
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            },
+            completedBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        },
+        comments: {
+          include: {
+            assigned_user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        },
+        documents: {
+          include: {
+            document: {
+              select: {
+                id: true,
+                document_name: true,
+                document_file_url: true,
+                document_file_mimeType: true,
+                size: true,
+                created_by: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        parentTask: {
+          select: {
+            id: true,
+            title: true,
+            taskStatus: true
+          }
+        },
+        childTasks: {
+          select: {
+            id: true,
+            title: true,
+            taskStatus: true,
+            priority: true,
+            createdAt: true
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     })
 
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 })
     }
 
-    // Check if user has permission to update the task
-    const isAssigned = task.assignees.some((assignee) => assignee.userId === user.id)
-    const isCreator = task.createdBy === user.id
+    return NextResponse.json({ data: task, success: true })
+  } catch (error) {
+    console.error("Error fetching task details:", error)
+    return NextResponse.json({ error: "Failed to fetch task details" }, { status: 500 })
+  }
+}
 
-    // If task is in a sprint, check project membership
-    let hasProjectAccess = false
-    if (task.sprint) {
-      const projectMember = await prismadb.projectMember.findFirst({
-        where: {
-          projectId: task.sprint.projectId,
-          userId: user.id,
-          role: { in: ["OWNER", "MANAGER"] },
-        },
-      })
-
-      const isProjectCreator = await prismadb.project.findFirst({
-        where: {
-          id: task.sprint.projectId,
-          createdById: user.id,
-        },
-      })
-
-      hasProjectAccess = !!projectMember || !!isProjectCreator
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getUserBasic()
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (!isAssigned && !isCreator && !hasProjectAccess && user.role !== "ADMIN") {
+    const { id } = await params
+    const taskId = id
+    const body = await req.json()
+
+    // Get task to check access
+    const existingTask = await prismadb.tasks.findUnique({
+      where: { id: taskId },
+      include: {
+        sprint: {
+          include: {
+            project: {
+              include: {
+                members: {
+                  where: { userId: user.id },
+                  select: { id: true, role: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!existingTask) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 })
+    }
+
+    // Check if user has permission to update the task
+    const hasPermission = 
+      existingTask.assignees.some(assignee => assignee.userId === user.id) ||
+      existingTask.createdBy === user.id ||
+      existingTask.sprint.project.members.some(member => 
+        member.userId === user.id && ['OWNER', 'MANAGER'].includes(member.role)
+      ) ||
+      existingTask.sprint.project.createdById === user.id
+
+    if (!hasPermission) {
       return NextResponse.json({ error: "Not authorized to update this task" }, { status: 403 })
     }
 
@@ -119,45 +247,31 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (body.title) updateData.title = body.title
     if (body.content !== undefined) updateData.content = body.content
     if (body.priority) updateData.priority = body.priority
-    if (body.section) updateData.section = body.section
-    if (body.sprintId !== undefined) updateData.sprintId = body.sprintId
-    if (body.weight) updateData.weight = body.weight
-    if (body.estimatedHours !== undefined) updateData.estimatedHours = body.estimatedHours
-    if (body.startDate) updateData.startDate = new Date(body.startDate)
+    if (body.taskStatus) updateData.taskStatus = body.taskStatus
     if (body.dueDateAt) updateData.dueDateAt = new Date(body.dueDateAt)
-    if (body.tags) updateData.tags = body.tags
-    if (body.parentTaskId !== undefined) updateData.parentTaskId = body.parentTaskId
+    if (body.weight !== undefined) updateData.weight = body.weight
+    if (body.position !== undefined) updateData.position = body.position
 
-    // Update task
+    // If task is being completed, set completedAt
+    if (body.taskStatus === 'COMPLETE' && existingTask.taskStatus !== 'COMPLETE') {
+      updateData.completedAt = new Date()
+    } else if (body.taskStatus !== 'COMPLETE' && existingTask.taskStatus === 'COMPLETE') {
+      updateData.completedAt = null
+    }
+
     const updatedTask = await prismadb.tasks.update({
       where: { id: taskId },
-      data: {
-        ...updateData,
-        updatedBy: user.id,
-        updatedAt: new Date(),
-      },
+      data: updateData,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        priority: true,
+        taskStatus: true,
+        updatedAt: true,
+        completedAt: true,
+      }
     })
-
-    // Update assignees if provided
-    if (body.assignees && Array.isArray(body.assignees)) {
-      // Remove existing assignees
-      await prismadb.taskAssignee.deleteMany({
-        where: { taskId },
-      })
-
-      // Add new assignees
-      await Promise.all(
-        body.assignees.map(async (userId: string) => {
-          return prismadb.taskAssignee.create({
-            data: {
-              taskId,
-              userId,
-              role: "ASSIGNEE",
-            },
-          })
-        }),
-      )
-    }
 
     return NextResponse.json({ task: updatedTask })
   } catch (error) {
@@ -168,82 +282,57 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const user = await getUserBasic()
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { id } = await params;
+    const { id } = await params
     const taskId = id
-    // Get task
-    const task = await prismadb.tasks.findUnique({
+
+    // Get task to check access
+    const existingTask = await prismadb.tasks.findUnique({
       where: { id: taskId },
       include: {
-        sprint: true,
-      },
+        sprint: {
+          include: {
+            project: {
+              include: {
+                members: {
+                  where: { userId: user.id },
+                  select: { id: true, role: true }
+                }
+              }
+            }
+          }
+        }
+      }
     })
 
-    if (!task) {
+    if (!existingTask) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 })
     }
+
     // Check if user has permission to delete the task
-    const isCreator = task.createdBy === user.id
+    const hasPermission = 
+      existingTask.createdBy === user.id ||
+      existingTask.sprint.project.members.some(member => 
+        member.userId === user.id && ['OWNER', 'MANAGER'].includes(member.role)
+      ) ||
+      existingTask.sprint.project.createdById === user.id
 
-    // If task is in a sprint, check project membership
-    let hasProjectAccess = false
-    if (task.sprint) {
-      const projectMember = await prismadb.projectMember.findFirst({
-        where: {
-          projectId: task.sprint.projectId,
-          userId: user.id,
-          role: { in: ["OWNER", "MANAGER"] },
-        },
-      })
-
-      const isProjectCreator = await prismadb.project.findFirst({
-        where: {
-          id: task.sprint.projectId,
-          createdById: user.id,
-        },
-      })
-
-      hasProjectAccess = !!projectMember || !!isProjectCreator
-    }
-
-    if (!isCreator && !hasProjectAccess && user.role !== "ADMIN") {
+    if (!hasPermission) {
       return NextResponse.json({ error: "Not authorized to delete this task" }, { status: 403 })
     }
 
-    // Delete checklist items
-    await prismadb.checklistItem.deleteMany({
-      where: { taskId },
-    });
-
-    // Fetch related task documents
-    const taskDocuments = await prismadb.taskDocument.findMany({
-      where: { taskId },
-      select: { document: { select: { key: true } } },
-    });
-
-    // Delete associated files
-    await Promise.all(taskDocuments.map(({ document }) => deleteFileFromDrive(document.key)));
-
-    // Delete all related records concurrently
-    await Promise.all([
-      prismadb.taskDocument.deleteMany({ where: { taskId } }),
-      prismadb.taskAssignee.deleteMany({ where: { taskId } }),
-      prismadb.tasksComments.deleteMany({ where: { taskId } }),
-      prismadb.taskFeedback.deleteMany({ where: { taskId } }),
-    ]);
-
-    // Delete the task itself
+    // Delete task
     await prismadb.tasks.delete({
       where: { id: taskId },
-    });
+    })
 
-    return NextResponse.json({ task }, { status: 201 })
+    return NextResponse.json({ success: true })
   } catch (error) {
+    console.error("Error deleting task:", error)
     return NextResponse.json({ error: "Failed to delete task" }, { status: 500 })
   }
 }
-
