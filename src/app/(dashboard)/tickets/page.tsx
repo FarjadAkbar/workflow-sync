@@ -7,7 +7,7 @@ import Container from "@/components/ui/container";
 const TicketsPage = async () => {
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-6 lg:px-8">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Tickets</h1>
         <CreateTicketDialog />

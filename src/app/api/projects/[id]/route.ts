@@ -73,15 +73,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
               orderBy: {
                 position: 'asc'
               }
+            },
+            _count: {
+              select: {
+                tasks: true
+              }
             }
           },
           orderBy: {
             createdAt: 'desc'
-          },
-          _count: {
-            select: {
-              tasks: true
-            }
           }
         },
         _count: {
