@@ -286,7 +286,7 @@ export default function ProjectTeamPage() {
         <CardContent>
           <div className="space-y-4">
             {members && members.length > 0 ? (
-              members.map((member) => (
+              members.map((member: ProjectMemberWithUserType) => (
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded-md">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
