@@ -1,13 +1,12 @@
 // Database model types (generated from Prisma)
 
-import { Prisma } from '@prisma/client'
+import { Prisma } from "@prisma/client"
 
-// Project types
 export type Project = Prisma.ProjectGetPayload<{
   include: {
     members: true
-    tasks: true
     sprints: true
+    boards: true
   }
 }>
 
@@ -21,42 +20,46 @@ export type ProjectWithMembers = Prisma.ProjectGetPayload<{
   }
 }>
 
-// Task types
 export type Task = Prisma.TasksGetPayload<{
   include: {
-    assignee: true
-    project: true
+    assignees: true
     sprint: true
     comments: true
-    attachments: true
+    documents: true
   }
 }>
 
 export type TaskWithDetails = Prisma.TasksGetPayload<{
   include: {
-    assignee: true
-    project: true
+    assignees: {
+      include: {
+        user: true
+      }
+    }
     sprint: true
     comments: {
       include: {
-        author: true
+        assigned_user: true
       }
     }
-    attachments: true
-    checklist: true
+    documents: {
+      include: {
+        document: true
+      }
+    }
+    checklists: true
+    subtasks: true
   }
 }>
 
-// User types
-export type User = Prisma.UsersGetPayload<{
+export type DbUser = Prisma.UsersGetPayload<{
   include: {
-    projects: true
-    tasks: true
-    comments: true
+    memberOfProjects: true
+    assignedTasks: true
+    taskComments: true
   }
 }>
 
-// Sprint types
 export type Sprint = Prisma.SprintGetPayload<{
   include: {
     project: true
@@ -64,7 +67,6 @@ export type Sprint = Prisma.SprintGetPayload<{
   }
 }>
 
-// Chat types
 export type ChatRoom = Prisma.ChatRoomGetPayload<{
   include: {
     messages: {
@@ -87,7 +89,6 @@ export type ChatMessage = Prisma.ChatMessageGetPayload<{
   }
 }>
 
-// Calendar types
 export type CalendarEvent = Prisma.CalendarEventGetPayload<{
   include: {
     creator: true
@@ -99,25 +100,21 @@ export type CalendarEvent = Prisma.CalendarEventGetPayload<{
   }
 }>
 
-// File types
 export type Document = Prisma.DocumentsGetPayload<{
   include: {
-    uploader: true
-    project: true
-    task: true
+    created_by: true
+    sharedWith: true
+    tasks: true
   }
 }>
 
-// Ticket types
 export type Ticket = Prisma.TicketGetPayload<{
   include: {
-    creator: true
-    assignee: true
-    project: true
+    createdBy: true
+    assignedTo: true
   }
 }>
 
-// Note types
 export type Note = Prisma.NotesGetPayload<{
   include: {
     author: true

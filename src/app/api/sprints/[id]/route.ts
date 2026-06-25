@@ -108,13 +108,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Sprint not found" }, { status: 404 })
     }
 
+    const completedTasks = sprint.tasks.filter((task) => task.taskStatus === "DONE").length
+    const totalTasks = sprint._count.tasks
+
     return NextResponse.json({
       data: {
         ...sprint,
         stats: {
-          totalTasks: sprint._count.tasks,
-          completedTasks: sprint._count.completedTasks,
-          completionPercentage: sprint._count.tasks > 0 ? Math.round((sprint._count.completedTasks / sprint._count.tasks) * 100) : 0,
+          totalTasks,
+          completedTasks,
+          completionPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
         },
       },
       success: true

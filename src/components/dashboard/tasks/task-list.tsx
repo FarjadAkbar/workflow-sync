@@ -191,7 +191,7 @@ export default function TaskList({ projectId, taskId }: { projectId: string; tas
                 {task.assignees.map((assignee: any) => (
                   <div key={assignee.id} className="flex items-center gap-2 bg-muted/50 rounded-full px-2 py-1">
                     <Avatar className="h-6 w-6">
-                      <AvatarImage src={assignee.user?.avatar} />
+                      <AvatarImage src={assignee.user?.avatar ?? undefined} />
                       <AvatarFallback>
                         {assignee.user?.name?.charAt(0) || assignee.user?.email?.charAt(0)}
                       </AvatarFallback>

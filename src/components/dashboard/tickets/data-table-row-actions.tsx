@@ -76,7 +76,7 @@ export function DataTableRowActions<TData>({
             <SheetTitle>Edit your ticket data</SheetTitle>
             <SheetDescription></SheetDescription>
           </SheetHeader>
-          <EditTicket initialData={data} openEdit={setEditOpen} />
+          <EditTicket initialData={data} />
         </SheetContent>
       </Sheet>
       <DropdownMenu>

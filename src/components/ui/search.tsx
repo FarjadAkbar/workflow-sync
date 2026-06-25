@@ -3,17 +3,12 @@
 import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useDispatch } from "react-redux";
-import { updateSearchQuery } from "@/store/slices/searchSlice";
 
 const Search: React.FC = () => {
   const [query, setQuery] = useState("");
-  const dispatch = useDispatch();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    dispatch(updateSearchQuery(value)); // Dispatch query to the Redux store
+    setQuery(e.target.value);
   };
 
   return (

@@ -78,7 +78,7 @@ export function ChatRoomsList({ search, activeRoomId, onRoomSelect }: ChatRoomsL
               </Avatar>
             ) : (
               <Avatar className="h-10 w-10">
-                <AvatarImage src={room.participants[0]?.avatar} />
+                <AvatarImage src={room.participants[0]?.avatar ?? undefined} />
                 <AvatarFallback className="h-10 w-10" style={{ backgroundColor: stringToColor(room.participants[0]?.name || room.participants[0]?.email) }}>
                   {room.participants[0]?.name?.substring(0, 2) || room.participants[0]?.email?.substring(0, 2) || "DM"}
                 </AvatarFallback>

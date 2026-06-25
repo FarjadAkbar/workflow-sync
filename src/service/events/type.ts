@@ -1,4 +1,4 @@
-import type { CalendarEvent, EventAttendee, MeetingRoom, Day } from "@prisma/client";
+import type { CalendarEvent, EventAttendee, MeetingRoom, Availability } from "@prisma/client";
 import { UserType } from "../users/type";
 
 export type EventWithRelationsType = CalendarEvent & {
@@ -32,12 +32,6 @@ export type CalendarViewRangeType = {
 };
 
 
-export type AvailablityType = {
-  id: string;
-  day: Day;
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
-  userId: string;
+export type AvailablityType = Availability & {
   user: UserType;
 }

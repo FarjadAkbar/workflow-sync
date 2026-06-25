@@ -222,11 +222,11 @@ export function FileList({ files, onFolderClick, isAdmin }: FileListProps) {
         </Table>
       </div>
 
-      {selectedFile && showAssignFolderModal && (
+      {selectedFile?.dbId && showAssignFolderModal && (
         <AssignFolderModal
           open={showAssignFolderModal}
           onOpenChange={setShowAssignFolderModal}
-          folderId={selectedFile.dbId || undefined}
+          folderId={selectedFile.dbId}
           folderName={selectedFile.name}
         />
       )}

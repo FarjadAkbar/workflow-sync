@@ -211,11 +211,11 @@ export function FileGrid({ files, onFolderClick, isAdmin }: FileGridProps) {
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{fileGrid}</div>
 
-      {selectedFile && showAssignFolderModal && (
+      {selectedFile?.dbId && showAssignFolderModal && (
         <AssignFolderModal
           open={showAssignFolderModal}
           onOpenChange={setShowAssignFolderModal}
-          folderId={selectedFile.dbId || undefined}
+          folderId={selectedFile.dbId}
           folderName={selectedFile.name}
         />
       )}

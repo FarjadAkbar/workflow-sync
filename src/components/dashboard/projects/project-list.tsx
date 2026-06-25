@@ -89,7 +89,7 @@ export function ProjectList() {
                           : project.status === "PLANNING"
                             ? "secondary"
                             : project.status === "ON_HOLD"
-                              ? "warning"
+                              ? "outline"
                               : "destructive"
                     }
                   >

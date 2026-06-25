@@ -72,14 +72,16 @@ export const listFilesInFolder = async (
     let currentId: string | undefined = id
 
     while (currentId) {
-      const res = await drive.files.get({
+      const response: {
+        data: { name?: string | null; parents?: string[] | null }
+      } = await drive.files.get({
         fileId: currentId,
         fields: 'id, name, parents',
         supportsAllDrives: true,
       })
 
-      pathParts.unshift(res.data.name!)
-      currentId = res.data.parents?.[0]
+      pathParts.unshift(response.data.name ?? "")
+      currentId = response.data.parents?.[0]
     }
 
     return '/' + pathParts.join('/')
@@ -101,10 +103,19 @@ export const listFilesInFolder = async (
   const parentPath = await buildFolderPath(folderId)
 
   // Step 3: Build final DriveFile array
-  return children.map((file) => ({
-    ...file,
-    fullPath: `${parentPath}/${file.name}`,
-  }))
+  return children
+    .filter((file): file is typeof file & { id: string; name: string } => !!file.id && !!file.name)
+    .map((file) => ({
+      id: file.id,
+      name: file.name,
+      mimeType: file.mimeType ?? "application/octet-stream",
+      fullPath: `${parentPath}/${file.name}`,
+      size: file.size ? Number(file.size) : undefined,
+      webViewLink: file.webViewLink ?? undefined,
+      thumbnailLink: file.thumbnailLink ?? undefined,
+      createdTime: file.createdTime ?? undefined,
+      modifiedTime: file.modifiedTime ?? undefined,
+    }))
 }
 
 

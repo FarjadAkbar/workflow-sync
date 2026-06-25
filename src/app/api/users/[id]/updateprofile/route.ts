@@ -9,7 +9,6 @@ export async function PUT(req: Request, props: { params: Promise<{ userId: strin
   const session = await getServerSession(authOptions);
   const { first_name, last_name, email, role } = await req.json();
   const fullName = `${first_name} ${last_name}`;
-  const username = (`${first_name}_${last_name}`).toLowerCase();
 
   if (!session) {
     return new NextResponse("Unauthenticated", { status: 401 });
@@ -20,7 +19,7 @@ export async function PUT(req: Request, props: { params: Promise<{ userId: strin
   }
 
   try {
-  console.log(first_name, last_name, email, fullName, username, "put");
+  console.log(first_name, last_name, email, fullName, "put");
 
     const newUserPass = await prismadb.users.update({
       data:  {
@@ -28,8 +27,6 @@ export async function PUT(req: Request, props: { params: Promise<{ userId: strin
         last_name,
         email, 
         name: fullName,
-        username,
-        account_name: username,
       },
       where: {
         id: params.userId,

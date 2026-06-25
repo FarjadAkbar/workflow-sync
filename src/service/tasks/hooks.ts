@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getTask, getSectionTasks, createTask, updateTask, deleteTask, moveTask } from "./fn"
+import { getTask, getSectionTasks, createTask, updateTask, deleteTask, moveTask, searchTasks } from "./fn"
 import { useMemo } from "react"
 
 // CORRECTED: Better cache configuration for tasks
@@ -113,7 +113,12 @@ export function useMoveTask() {
 
   return useMutation({
     mutationFn: moveTask,
-    onMutate: async ({ taskId, newSection, oldSection, sprintId }) => {
+    onMutate: async ({ taskId, sectionId, oldSection }) => {
+      const newSection = sectionId
+      if (!oldSection) {
+        return {}
+      }
+
       // Cancel queries
       await queryClient.cancelQueries({ queryKey: ["section-tasks", oldSection] })
       await queryClient.cancelQueries({ queryKey: ["section-tasks", newSection] })
@@ -142,7 +147,8 @@ export function useMoveTask() {
       
       return { oldSectionTasks, newSectionTasks }
     },
-    onError: (err, { oldSection, newSection }, context) => {
+    onError: (err, { sectionId, oldSection }, context) => {
+      const newSection = sectionId
       // Revert changes
       if (context?.oldSectionTasks) {
         queryClient.setQueryData(["section-tasks", oldSection], context.oldSectionTasks)

@@ -229,7 +229,6 @@ export async function getTaskWithDetails(taskId: string, userId: string) {
           id: true,
           title: true,
           completed: true,
-          priority: true,
           createdAt: true,
           createdBy: {
             select: {

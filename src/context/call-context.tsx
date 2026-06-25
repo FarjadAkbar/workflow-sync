@@ -40,7 +40,7 @@ const initialCallState: CallState = {
 
 const CallContext = createContext<CallContextType | undefined>(undefined)
 
-export function CallProvider({ children, user, socket }: { children: React.ReactNode; user: SocketUser; socket: SocketInstance }) {
+export function CallProvider({ children, user, socket }: { children: React.ReactNode; user: SocketUser; socket: SocketInstance | null }) {
   const [callState, setCallState] = useState<CallState>(initialCallState)
   const { toast } = useToast()
   const localStreamRef = useRef<MediaStream | null>(null)
@@ -89,7 +89,7 @@ export function CallProvider({ children, user, socket }: { children: React.React
       })
 
       // Emit call event to server
-      socket.emit("call:start", {
+      socket?.emit("call:start", {
         roomId,
         participants: participants.map((p) => p.id),
         callType,
@@ -147,7 +147,7 @@ export function CallProvider({ children, user, socket }: { children: React.React
       }))
 
       // Emit answer event to server
-      socket.emit("call:answer", {
+      socket?.emit("call:answer", {
         roomId: callState.roomId,
         answerer: user,
       })
@@ -166,7 +166,7 @@ export function CallProvider({ children, user, socket }: { children: React.React
   const rejectCall = () => {
     // Emit reject event to server
     if (callState.roomId) {
-      socket.emit("call:reject", {
+      socket?.emit("call:reject", {
         roomId: callState.roomId,
         rejecter: user,
       })
@@ -181,7 +181,7 @@ export function CallProvider({ children, user, socket }: { children: React.React
   const endCall = () => {
     // Emit end event to server
     if (callState.roomId) {
-      socket.emit("call:end", {
+      socket?.emit("call:end", {
         roomId: callState.roomId,
         ender: user,
       })

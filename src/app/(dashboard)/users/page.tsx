@@ -1,7 +1,6 @@
 import React from "react";
 import { InviteForm } from "@/components/dashboard/users/invite-form";
 import { Separator } from "@/components/ui/separator";
-import SendMailToAll from "@/components/dashboard/users/send-mail-to-all";
 import Container from "../../../components/ui/container";
 import UsersList from "@/components/dashboard/users/users-list";
 

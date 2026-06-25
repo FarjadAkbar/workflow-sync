@@ -1,7 +1,7 @@
 
 import axios from "axios";
 import type { Project, ProjectMember } from "@prisma/client";
-import { CreateProjectPayloadType, ProjectWithStatsType, ProjectType } from "./type";
+import { CreateProjectPayloadType, ProjectMemberWithUserType, ProjectWithStatsType, ProjectType } from "./type";
 import API from "@/lib/axios-client";
 
 // Fetch all projects
@@ -35,14 +35,14 @@ export const deleteProject = async (projectId: string): Promise<string> => {
 };
 
 // Fetch project members
-export const fetchProjectMembers = async (projectId: string): Promise<ProjectMember[]> => {
-  const response = await API.get<{ members: ProjectMember[] }>(`/projects/${projectId}/members`);
+export const fetchProjectMembers = async (projectId: string): Promise<ProjectMemberWithUserType[]> => {
+  const response = await API.get<{ members: ProjectMemberWithUserType[] }>(`/projects/${projectId}/members`);
   return response.data.members;
 };
 
 // Add a member to a project
-export const addProjectMember = async ({ projectId, userId, role }: { projectId: string; userId: string; role: string }): Promise<ProjectMember> => {
-  const response = await API.post<{ member: ProjectMember }>(`/projects/${projectId}/members`, { userId, role });
+export const addProjectMember = async ({ projectId, userId, role }: { projectId: string; userId: string; role: string }): Promise<ProjectMemberWithUserType> => {
+  const response = await API.post<{ member: ProjectMemberWithUserType }>(`/projects/${projectId}/members`, { userId, role });
   return response.data.member;
 };
 

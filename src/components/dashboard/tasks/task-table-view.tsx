@@ -346,7 +346,7 @@ export function TaskTableView({ boardId, sprintId }: TaskTableViewProps) {
                           {task.assignees && task.assignees.length > 0 ? (
                             task.assignees.slice(0, 3).map((assignee: any) => (
                               <Avatar key={assignee.id} className="h-8 w-8 border-2 border-background">
-                                <AvatarImage src={assignee.user?.avatar} />
+                                <AvatarImage src={assignee.user?.avatar ?? undefined} />
                                 <AvatarFallback>
                                   {assignee.user?.name?.charAt(0) || assignee.user?.email?.charAt(0)}
                                 </AvatarFallback>

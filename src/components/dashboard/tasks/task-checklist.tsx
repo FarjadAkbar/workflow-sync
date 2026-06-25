@@ -118,7 +118,7 @@ export function TaskChecklist({ taskId, checklist = [] }: TaskChecklistProps) {
                 <div className="flex justify-between items-center mt-1">
                   <div className="flex items-center gap-1">
                     <Avatar className="h-5 w-5">
-                      <AvatarImage src={item.createdBy?.avatar} />
+                      <AvatarImage src={item.createdBy?.avatar ?? undefined} />
                       <AvatarFallback className="text-[10px]">
                         {item.createdBy?.name?.charAt(0) || item.createdBy?.email?.charAt(0)}
                       </AvatarFallback>
@@ -129,7 +129,7 @@ export function TaskChecklist({ taskId, checklist = [] }: TaskChecklistProps) {
                     <div className="flex items-center gap-1">
                       {item.completedBy && (
                         <Avatar className="h-5 w-5">
-                          <AvatarImage src={item.completedBy?.avatar} />
+                          <AvatarImage src={item.completedBy?.avatar ?? undefined} />
                           <AvatarFallback className="text-[10px]">
                             {item.completedBy?.name?.charAt(0) || item.completedBy?.email?.charAt(0)}
                           </AvatarFallback>
