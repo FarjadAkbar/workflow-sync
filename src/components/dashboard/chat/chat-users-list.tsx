@@ -82,7 +82,7 @@ export function ChatUsersList({ search, onUserSelect }: ChatUsersListProps) {
         >
           <div className="flex items-center gap-3 cursor-pointer">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatar} />
+              <AvatarImage src={user.avatar ?? undefined} />
               <AvatarFallback style={{ backgroundColor: stringToColor(user.id), color: "#fff" }}>{user.name?.substring(0, 2) || user.email?.substring(0, 2) || "U"}</AvatarFallback>
             </Avatar>
 

@@ -18,8 +18,8 @@ export function TaskNavigation({
   showActionButtons = true, 
   className = "" 
 }: TaskNavigationProps) {
-  const projectId = task.sprint?.project?.id
-  const projectName = task.sprint?.project?.name || "Project"
+  const projectId = task.sprint?.projectId
+  const projectName = "Project"
   const sprintId = task.sprint?.id
   const sprintName = task.sprint?.name
 

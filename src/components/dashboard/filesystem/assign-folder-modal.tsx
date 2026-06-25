@@ -108,7 +108,7 @@ export function AssignFolderModal({
                             value={user.id}
                             onSelect={(value) => {
                               setSelectedUser(value === selectedUser ? null : value)
-                              setSelectedUserName(user.name)
+                              setSelectedUserName(user.name ?? "")
                               setOpenCombobox(false)
                             }}
                           >

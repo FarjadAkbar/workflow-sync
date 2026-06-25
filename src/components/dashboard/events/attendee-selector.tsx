@@ -45,9 +45,9 @@ export function AttendeeSelector({ value, onChange }: AttendeeProps) {
 
   const users = data?.users || []
 
-  const handleAddUser = (user: { name: string; email: string }) => {
+  const handleAddUser = (user: { name: string | null; email: string }) => {
     if (!value.some((attendee) => attendee.email === user.email)) {
-      onChange([...value, { email: user.email, name: user.name }])
+      onChange([...value, { email: user.email, name: user.name ?? undefined }])
     }
   }
 
@@ -75,7 +75,8 @@ export function AttendeeSelector({ value, onChange }: AttendeeProps) {
   // Filter users based on search
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) || user.email.toLowerCase().includes(search.toLowerCase()),
+      (user.name?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+      user.email.toLowerCase().includes(search.toLowerCase()),
   )
 
   return (
@@ -149,11 +150,11 @@ export function AttendeeSelector({ value, onChange }: AttendeeProps) {
                         className="flex items-center gap-2 p-2"
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar} />
-                          <AvatarFallback>{user.name[0]}</AvatarFallback>
+                          <AvatarImage src={user.avatar ?? undefined} />
+                          <AvatarFallback>{user.name?.[0] ?? user.email[0]}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="font-medium">{user.name}</span>
+                          <span className="font-medium">{user.name ?? user.email}</span>
                           <span className="text-xs text-muted-foreground">{user.email}</span>
                         </div>
                         <Check

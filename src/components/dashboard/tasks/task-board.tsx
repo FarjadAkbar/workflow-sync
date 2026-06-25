@@ -33,8 +33,8 @@ const TaskCard = memo(({ task, onMove }: { task: TaskType; onMove: (taskId: stri
           {task.assignees?.slice(0, 3).map((assignee) => (
             <img
               key={assignee.user.id}
-              src={assignee.user.avatar || "/images/nouser.png"}
-              alt={assignee.user.name}
+              src={assignee.user.avatar ?? "/images/nouser.png"}
+              alt={assignee.user.name ?? assignee.user.email}
               className="w-6 h-6 rounded-full border-2 border-white"
             />
           ))}
@@ -92,10 +92,11 @@ export const TaskBoard = memo(({ boardId, sprintId }: TaskBoardProps) => {
   const { mutate: moveTask } = useMoveTask()
   
   // Use optimized hooks with better caching
-  const { data: tasks = [], isLoading: loadingTasks } = useSearchTasks("", { 
+  const { data: tasksData, isLoading: loadingTasks } = useSearchTasks("", { 
     sprintId,
     projectId: !sprintId ? boardId : undefined 
   })
+  const tasks: TaskType[] = tasksData ?? []
 
   // Memoize sections to prevent re-computation
   const sections = useMemo(() => {
@@ -116,9 +117,10 @@ export const TaskBoard = memo(({ boardId, sprintId }: TaskBoardProps) => {
     if (task && task.assigned_section) {
       moveTask({
         taskId,
-        newSection: newSectionId,
+        sectionId: newSectionId,
+        position: task.position ?? 0,
         oldSection: task.assigned_section.id,
-        sprintId: task.sprintId
+        sprintId: task.sprintId,
       })
     }
   }, [tasks, moveTask])

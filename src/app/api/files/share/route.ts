@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         return prismadb.fileShare.create({
           data: {
             fileId: body.fileId,
-            sharedById: session.user.id,
+            sharedById: userId,
             sharedWithId: userId,
             permissions: body.permissions || "view",
           },

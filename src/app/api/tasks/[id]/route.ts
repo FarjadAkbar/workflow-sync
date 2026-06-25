@@ -210,33 +210,40 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const existingTask = await prismadb.tasks.findUnique({
       where: { id: taskId },
       include: {
+        assignees: {
+          select: { userId: true },
+        },
         sprint: {
           include: {
             project: {
               include: {
                 members: {
                   where: { userId: user.id },
-                  select: { id: true, role: true }
-                }
-              }
-            }
-          }
-        }
-      }
+                  select: { id: true, userId: true, role: true },
+                },
+              },
+            },
+          },
+        },
+      },
     })
 
     if (!existingTask) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 })
     }
 
+    const project = existingTask.sprint?.project
+
     // Check if user has permission to update the task
-    const hasPermission = 
-      existingTask.assignees.some(assignee => assignee.userId === user.id) ||
+    const hasPermission =
+      existingTask.assignees.some((assignee) => assignee.userId === user.id) ||
       existingTask.createdBy === user.id ||
-      existingTask.sprint.project.members.some(member => 
-        member.userId === user.id && ['OWNER', 'MANAGER'].includes(member.role)
-      ) ||
-      existingTask.sprint.project.createdById === user.id
+      (project?.members.some(
+        (member) =>
+          member.userId === user.id && ["OWNER", "MANAGER"].includes(member.role),
+      ) ??
+        false) ||
+      project?.createdById === user.id
 
     if (!hasPermission) {
       return NextResponse.json({ error: "Not authorized to update this task" }, { status: 403 })
@@ -300,26 +307,30 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
               include: {
                 members: {
                   where: { userId: user.id },
-                  select: { id: true, role: true }
-                }
-              }
-            }
-          }
-        }
-      }
+                  select: { id: true, userId: true, role: true },
+                },
+              },
+            },
+          },
+        },
+      },
     })
 
     if (!existingTask) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 })
     }
 
+    const project = existingTask.sprint?.project
+
     // Check if user has permission to delete the task
-    const hasPermission = 
+    const hasPermission =
       existingTask.createdBy === user.id ||
-      existingTask.sprint.project.members.some(member => 
-        member.userId === user.id && ['OWNER', 'MANAGER'].includes(member.role)
-      ) ||
-      existingTask.sprint.project.createdById === user.id
+      (project?.members.some(
+        (member) =>
+          member.userId === user.id && ["OWNER", "MANAGER"].includes(member.role),
+      ) ??
+        false) ||
+      project?.createdById === user.id
 
     if (!hasPermission) {
       return NextResponse.json({ error: "Not authorized to delete this task" }, { status: 403 })

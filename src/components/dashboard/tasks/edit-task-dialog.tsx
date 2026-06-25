@@ -85,8 +85,8 @@ export function EditTaskDialog({ taskId, open, onOpenChange }: EditTaskDialogPro
   const onSubmit = (values: FormValues) => {
     updateTask(
       {
-        taskId,
-        data: values,
+        id: taskId,
+        ...values,
       },
       {
         onSuccess: () => {

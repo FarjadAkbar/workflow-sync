@@ -1,5 +1,8 @@
-import { CustomError } from "@/types";
 import axios from "axios";
+
+type CustomError = Error & {
+  errorCode?: string;
+};
 
 const baseURL = process.env.NEXT_PUBLIC_APP_URL + "/api";
 

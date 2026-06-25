@@ -78,7 +78,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           select: {
             id: true,
             title: true,
-            taskStatus: true,
+            completed: true,
             createdAt: true,
             createdBy: {
               select: {
@@ -93,7 +93,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           select: {
             id: true,
             title: true,
-            isCompleted: true,
+            completed: true,
             createdAt: true,
             completedBy: {
               select: {
@@ -120,7 +120,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         comments: {
           select: {
             id: true,
-            content: true,
+            comment: true,
             createdAt: true,
             assigned_user: {
               select: {
@@ -140,7 +140,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           select: {
             id: true,
             rating: true,
-            comment: true,
+            feedback: true,
             createdAt: true,
             user: {
               select: {

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from "next/link"
 import { useAddProjectMember, useProject, useProjectMembers, useRemoveProjectMember } from "@/service/projects"
+import type { ProjectMemberWithUserType } from "@/service/projects/type"
 import { useGetUsersQuery } from "@/service/users"
 import { toast } from "@/hooks/use-toast"
 
@@ -70,7 +71,7 @@ export default function ProjectTeamPage() {
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false)
   const [selectedRole, setSelectedRole] = useState("MEMBER")
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [memberToRemove, setMemberToRemove] = useState<any | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<ProjectMemberWithUserType | null>(null)
 
   const { data: usersData, isLoading: loadingUsers } = useGetUsersQuery({ search: searchQuery})
   const { mutate: addMember, isPending: isAddingMember } = useAddProjectMember()
@@ -289,7 +290,7 @@ export default function ProjectTeamPage() {
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded-md">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={member.user?.avatar} />
+                      <AvatarImage src={member.user?.avatar ?? undefined} />
                       <AvatarFallback>{member.user?.name?.charAt(0) || member.user?.email?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>

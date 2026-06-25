@@ -29,11 +29,9 @@ export function TaskFeedback({ taskId, feedback = [] }: TaskFeedbackProps) {
       {
         taskId,
         userId: "current-user-id", // This would be replaced with the actual user ID
-        data: {
-          feedback: newFeedback,
-          rating,
-          isPrivate,
-        },
+        feedback: newFeedback,
+        rating,
+        isPrivate,
       },
       {
         onSuccess: () => {
@@ -115,7 +113,7 @@ export function TaskFeedback({ taskId, feedback = [] }: TaskFeedbackProps) {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={item.user?.avatar} />
+                    <AvatarImage src={item.user?.avatar ?? undefined} />
                     <AvatarFallback>{item.user?.name?.charAt(0) || item.user?.email?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>

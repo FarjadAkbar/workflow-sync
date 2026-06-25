@@ -65,6 +65,18 @@ export default function ProjectDetail({ projectId }: { projectId: string }) {
 
     // Get active sprint if any
     const activeSprint = project.sprints?.find((sprint) => sprint.status === "ACTIVE")
+    const activeSprintTasks =
+      activeSprint && "tasks" in activeSprint
+        ? ((activeSprint as { tasks?: { taskStatus: string }[] }).tasks ?? [])
+        : []
+    const activeSprintCompleted = activeSprintTasks.filter(
+      (task) => task.taskStatus === "COMPLETE" || task.taskStatus === "DONE",
+    ).length
+    const activeSprintTotal = activeSprintTasks.length
+    const activeSprintCompletion =
+      activeSprintTotal > 0
+        ? Math.round((activeSprintCompleted / activeSprintTotal) * 100)
+        : 0
 
     return (
         <div className="space-y-6">
@@ -157,7 +169,7 @@ export default function ProjectDetail({ projectId }: { projectId: string }) {
               <div className="flex -space-x-2 mt-2">
                 {project.members?.slice(0, 5).map((member) => (
                   <Avatar key={member.id} className="h-8 w-8 border-2 border-background">
-                    <AvatarImage src={member.user?.avatar} />
+                    <AvatarImage src={member.user?.avatar ?? undefined} />
                     <AvatarFallback>{member.user?.name?.charAt(0) || member.user?.email?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 ))}
@@ -207,11 +219,11 @@ export default function ProjectDetail({ projectId }: { projectId: string }) {
                     <Badge>{activeSprint.status}</Badge>
                   </div>
 
-                  <Progress value={activeSprint.stats?.completionPercentage || 0} className="h-2" />
+                  <Progress value={activeSprintCompletion} className="h-2" />
 
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{activeSprint.stats?.completedTasks || 0} tasks completed</span>
-                    <span>{activeSprint.stats?.totalTasks || 0} total tasks</span>
+                    <span>{activeSprintCompleted} tasks completed</span>
+                    <span>{activeSprintTotal} total tasks</span>
                   </div>
 
                   <Button className="w-full" asChild>
@@ -381,7 +393,7 @@ export default function ProjectDetail({ projectId }: { projectId: string }) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={member.avatar} />
+                          <AvatarImage src={member.avatar ?? undefined} />
                           <AvatarFallback>{member.name?.charAt(0) || member.email?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>

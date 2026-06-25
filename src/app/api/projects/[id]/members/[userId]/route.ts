@@ -14,24 +14,25 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const body = await req.json()
 
     // Check if user has permission to update members
-    const hasPermission =
-      (await prismadb.projectMember.findFirst({
-        where: {
-          projectId,
-          userId: user.id,
-          role: { in: ["OWNER", "MANAGER"] },
-        },
-      })) ||
-      (await prismadb.project.findFirst({
-        where: {
-          id: projectId,
-          createdById: user.id,
-        },
-      }))
+    const actorMembership = await prismadb.projectMember.findFirst({
+      where: {
+        projectId,
+        userId: user.id,
+        role: { in: ["OWNER", "MANAGER"] },
+      },
+    })
+    const isCreator = await prismadb.project.findFirst({
+      where: {
+        id: projectId,
+        createdById: user.id,
+      },
+    })
 
-    if (!hasPermission) {
+    if (!actorMembership && !isCreator) {
       return NextResponse.json({ error: "Not authorized to update members in this project" }, { status: 403 })
     }
+
+    const actorIsOwner = actorMembership?.role === "OWNER" || !!isCreator
 
     // Check if trying to update an owner (only owners can update owners)
     const targetMember = await prismadb.projectMember.findFirst({
@@ -41,7 +42,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     })
 
-    if (targetMember?.role === "OWNER" && !(hasPermission.role === "OWNER" || user.id === memberId)) {
+    if (targetMember?.role === "OWNER" && !(actorIsOwner || user.id === memberId)) {
       return NextResponse.json({ error: "Only owners can update other owners" }, { status: 403 })
     }
 
@@ -85,24 +86,25 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id: projectId, userId: memberId } = await params
 
     // Check if user has permission to remove members
-    const hasPermission =
-      (await prismadb.projectMember.findFirst({
-        where: {
-          projectId,
-          userId: user.id,
-          role: { in: [ProjectRole.OWNER, ProjectRole.MANAGER] },
-        },
-      })) ||
-      (await prismadb.project.findFirst({
-        where: {
-          id: projectId,
-          createdById: user.id,
-        },
-      }))
+    const actorMembership = await prismadb.projectMember.findFirst({
+      where: {
+        projectId,
+        userId: user.id,
+        role: { in: [ProjectRole.OWNER, ProjectRole.MANAGER] },
+      },
+    })
+    const isCreator = await prismadb.project.findFirst({
+      where: {
+        id: projectId,
+        createdById: user.id,
+      },
+    })
 
-    if (!hasPermission) {
+    if (!actorMembership && !isCreator) {
       return NextResponse.json({ error: "Not authorized to remove members from this project" }, { status: 403 })
     }
+
+    const actorIsOwner = actorMembership?.role === ProjectRole.OWNER || !!isCreator
 
     // Check if trying to remove an owner (only owners can remove owners)
     const targetMember = await prismadb.projectMember.findFirst({
@@ -112,7 +114,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       },
     })
 
-    if (targetMember?.role === ProjectRole.OWNER && !(hasPermission.role === ProjectRole.OWNER || user.id === memberId)) {
+    if (targetMember?.role === ProjectRole.OWNER && !(actorIsOwner || user.id === memberId)) {
       return NextResponse.json({ error: "Only owners can remove other owners" }, { status: 403 })
     }
 

@@ -118,7 +118,7 @@ export function TaskSubtasks({ taskId, subtasks = [] }: TaskSubtasksProps) {
                 <div className="flex justify-between items-center mt-1">
                   <div className="flex items-center gap-1">
                     <Avatar className="h-5 w-5">
-                      <AvatarImage src={subtask.createdBy?.avatar} />
+                      <AvatarImage src={subtask.createdBy?.avatar ?? undefined} />
                       <AvatarFallback className="text-[10px]">
                         {subtask.createdBy?.name?.charAt(0) || subtask.createdBy?.email?.charAt(0)}
                       </AvatarFallback>

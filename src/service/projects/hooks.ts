@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchProjects, createProject, updateProject, deleteProject } from "./fn"
+import { fetchProjects, fetchProject, createProject, updateProject, deleteProject } from "./fn"
 import { useMemo } from "react"
 
 // CORRECTED: Better cache configuration to prevent unnecessary re-renders

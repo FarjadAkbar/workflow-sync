@@ -90,7 +90,7 @@ export function TaskCard({ task, taskId }: TaskCardProps) {
             <div className="flex -space-x-2">
               {task.assignees?.slice(0, 3).map((assignee: TaskAssignee) => (
                 <Avatar key={assignee.id} className="h-6 w-6 border-2 border-background">
-                  <AvatarImage src={assignee.user?.avatar} />
+                  <AvatarImage src={assignee.user?.avatar ?? undefined} />
                   <AvatarFallback className="text-xs">
                     {assignee.user?.name?.charAt(0) || assignee.user?.email?.charAt(0)}
                   </AvatarFallback>

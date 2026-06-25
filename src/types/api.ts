@@ -16,6 +16,13 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   }
 }
 
+export interface PaginationType {
+  totalCount: number
+  pageSize: number
+  pageNumber: number
+  totalPages: number
+}
+
 export interface ErrorResponse {
   success: false
   error: string

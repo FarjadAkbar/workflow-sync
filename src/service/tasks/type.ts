@@ -64,9 +64,11 @@ export type TaskFeedbackPayloadType = {
 
 
 export type MoveTaskPayloadType = {
-  taskId: string,
-  sectionId: string,
+  taskId: string
+  sectionId: string
   position: number
+  oldSection?: string
+  sprintId?: string | null
 }
 
 export type TaskCommentType = TasksComments & {

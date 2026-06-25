@@ -90,9 +90,9 @@ export const useUpdateSection = () => {
   return useMutation({
     mutationFn: ({ sectionId, data }: { sectionId: string; data: Partial<SectionPayloadType> }) =>
       updateSection(sectionId, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["sections", variables.boardId] });
-      queryClient.invalidateQueries({ queryKey: ["board", variables.boardId] });
+    onSuccess: (section) => {
+      queryClient.invalidateQueries({ queryKey: ["sections", section.boardId] });
+      queryClient.invalidateQueries({ queryKey: ["board", section.boardId] });
     },
   });
 };

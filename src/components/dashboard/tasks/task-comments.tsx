@@ -80,7 +80,7 @@ export function TaskComments({ taskId, comments = [] }: TaskCommentsProps) {
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={comment.assigned_user?.avatar} />
+                <AvatarImage src={comment.assigned_user?.avatar ?? undefined} />
                 <AvatarFallback>
                   {comment.assigned_user?.name?.charAt(0) || comment.assigned_user?.email?.charAt(0)}
                 </AvatarFallback>
