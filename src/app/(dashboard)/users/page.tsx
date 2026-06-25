@@ -9,11 +9,11 @@ const AdminUsersPage = async () => {
   return (
     <Container
       title="Users administration"
-      description={"Here you can manage your DolceCRM users"}
+      description={"Here you can manage users"}
     >
       <div className="flex flex-col gap-4">
         <h4 className=" text-lg sm:text-xl font-semibold">
-          Invite new user to DolceCRM
+          Invite new user 
         </h4>
         <InviteForm />
       </div>

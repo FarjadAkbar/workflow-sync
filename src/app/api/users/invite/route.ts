@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   try {
     const body: InvitePayloadType = await req.json();
-    const { firstName, lastName, email, role, webmailEmail, webmailPassword, clockinUsername, clockinPassword } = body;
+    const { firstName, lastName, email, role } = body;
 
     const name = `${firstName} ${lastName}`;
     const password = generateRandomPassword();
@@ -50,10 +50,6 @@ export async function POST(req: Request) {
             avatar: "",
             email,
             role: role,
-            webmail_email: webmailEmail,
-            webmail_password: webmailPassword, 
-            clockin_username: clockinUsername, 
-            clockin_password: clockinPassword,
             userStatus: ActiveStatus.ACTIVE,
             password: await hash(password, 12),
           },

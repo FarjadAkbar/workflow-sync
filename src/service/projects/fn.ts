@@ -6,26 +6,26 @@ import API from "@/lib/axios-client";
 
 // Fetch all projects
 export const fetchProjects = async (): Promise<ProjectWithStatsType[]> => {
-  const response = await API.get<{ projects: ProjectWithStatsType[] }>("/projects");
-  return response.data.projects;
+  const response = await API.get<{ data: ProjectWithStatsType[]; success: boolean }>("/projects");
+  return response.data.data;
 };
 
 // Fetch a single project
 export const fetchProject = async (projectId: string): Promise<ProjectType> => {
-  const response = await API.get<{ project: ProjectType }>(`/projects/${projectId}`);
-  return response.data.project;
+  const response = await API.get<{ data: ProjectType; success: boolean }>(`/projects/${projectId}`);
+  return response.data.data;
 };
 
 // Create a new project
 export const createProject = async (data: CreateProjectPayloadType): Promise<Project> => {
-  const response = await API.post<{ project: Project }>("/projects", data);
-  return response.data.project;
+  const response = await API.post<{ data: Project; success: boolean }>("/projects", data);
+  return response.data.data;
 };
 
 // Update a project
 export const updateProject = async ({ projectId, data }: { projectId: string; data: Partial<CreateProjectPayloadType> }): Promise<Project> => {
-  const response = await API.put<{ project: Project }>(`/projects/${projectId}`, data);
-  return response.data.project;
+  const response = await API.put<{ data: Project; success: boolean }>(`/projects/${projectId}`, data);
+  return response.data.data;
 };
 
 // Delete a project

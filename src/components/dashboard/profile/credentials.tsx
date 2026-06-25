@@ -32,24 +32,6 @@ export function Credentials({ data }: ProfileFormProps) {
     }
   
     const credentials = [
-        ...(data.webmail_email && data.webmail_password ? [{
-          title: "Webmail",
-          url: "https://webmail-oxcs.networksolutionsemail.com/appsuite/?user_domain=mail.worksync.com",
-          linkText: "Open Webmail",
-          fields: [
-            { label: "User Mail", value: data.webmail_email, id: "webmail_email" },
-            { label: "Password", value: data.webmail_password, id: "webmail_password" },
-          ],
-        }] : []),
-        ...(data.clockin_username && data.clockin_password ? [{
-          title: "Clockin",
-          url: "https://apps.timeclockwizard.com/Login?subDomain=unitedproviders",
-          linkText: "Open Clockin",
-          fields: [
-            { label: "User Name", value: data.clockin_username, id: "clockin_username" },
-            { label: "Password", value: data.clockin_password, id: "clockin_password" },
-          ],
-        }] : []),
         {
           title: "Zoom Meeting",
           url: "https://zoom.us/signin#/login",
@@ -73,7 +55,7 @@ export function Credentials({ data }: ProfileFormProps) {
   
               <Link
                 href={credential.url}
-                className="inline-flex items-center mt-4 bg-black text-gold hover:bg-gold hover:text-black px-4 py-2 rounded-lg transition-colors gap-2"
+                className="inline-flex items-center mt-4 bg-black text-gold hover:bg-gold hover:text-black px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl gap-2"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -90,7 +72,7 @@ export function Credentials({ data }: ProfileFormProps) {
                       onClick={() => handleCopy(field.value, field.label, field.id)}
                     >
                       <span className="text-gray-800 font-medium">{field.value}</span>
-                      <Button>
+                      <Button variant="ghost" size="icon-sm" className="hover:bg-gray-200">
                         {copiedFields[field.id] ? (
                           <Check className="h-4 w-4 text-green-500" />
                         ) : (

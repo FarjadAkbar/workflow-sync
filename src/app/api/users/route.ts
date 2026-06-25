@@ -1,54 +1,61 @@
-import { NextResponse } from "next/server";
-import { prismadb } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+﻿import { NextResponse } from "next/server"
+import { getUserBasic } from "@/lib/get-user-optimized"
+import { prismadb } from "@/lib/prisma"
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    // OPTIMIZED: Use lightweight user check
+    const user = await getUserBasic()
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = session.user.id
     const { searchParams } = new URL(req.url)
     const search = searchParams.get("search") || ""
 
-    // Get users excluding the current user
+    // Build where clause for search
+    const where: any = {}
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { first_name: { contains: search, mode: 'insensitive' } },
+        { last_name: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    // Get users with optimized fields
     const users = await prismadb.users.findMany({
-      where: {
-        id: { not: userId },
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { email: { contains: search, mode: "insensitive" } },
-          { first_name: { contains: search, mode: "insensitive" } },
-          { last_name: { contains: search, mode: "insensitive" } },
-        ],
-      },
+      where,
       select: {
         id: true,
         name: true,
         email: true,
         avatar: true,
+        image: true,
         role: true,
         userStatus: true,
+        first_name: true,
+        last_name: true,
+        created_at: true,
+        lastLoginAt: true,
+        _count: {
+          select: {
+            createdProjects: true,
+            memberOfProjects: true,
+            assignedTasks: true,
+            createdTasks: true
+          }
+        }
       },
       orderBy: {
-        name: "asc",
-      },
-      take: 50,
+        created_at: 'desc'
+      }
     })
 
-    return NextResponse.json(
-      {
-        message: "Success",
-        users,
-      },
-      { status: 200 },
-    )
+    return NextResponse.json({ users })
   } catch (error) {
     console.error("Error fetching users:", error)
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }

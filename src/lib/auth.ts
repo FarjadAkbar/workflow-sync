@@ -79,10 +79,6 @@ export const authOptions: NextAuthOptions = {
       session.user.avatar = user.avatar;
       session.user.role = user.role;
       
-      session.user.webmail_email = user.webmail_email;
-      session.user.webmail_password = user.webmail_password;
-      session.user.clockin_username = user.clockin_username;
-      session.user.clockin_password = user.clockin_password;
       
       session.user.userStatus = user.userStatus;
       session.user.lastLoginAt = user.lastLoginAt;
