@@ -1,232 +1,245 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getUser } from "@/lib/get-user";
-import { 
-  CheckSquare, 
-  Users, 
-  Ticket, 
-  Calendar, 
-  MessageSquare, 
-  FolderOpen,
-  BarChart3,
-  Clock,
-  TrendingUp,
-  Activity,
-  Target,
-  Zap
+import {
+  Contact,
+  CircleDollarSign,
+  Rocket,
+  CheckSquare,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+  type LucideIcon,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Analytics Dashboard | WorkSync",
-  description: "Real-time analytics and insights for your team productivity",
+  title: "Dashboard | Dolce CRM",
+  description: "Pipeline, sprints and team activity at a glance.",
 };
+
+type Stat = {
+  label: string;
+  value: string;
+  delta: string;
+  trend: "up" | "down";
+  icon: LucideIcon;
+};
+
+const stats: Stat[] = [
+  { label: "Open leads", value: "63", delta: "+8 this week", trend: "up", icon: Contact },
+  { label: "Pipeline value", value: "$284k", delta: "+12.4%", trend: "up", icon: CircleDollarSign },
+  { label: "Active sprints", value: "4", delta: "1 closing Fri", trend: "up", icon: Rocket },
+  { label: "Tasks due today", value: "17", delta: "-3 vs yesterday", trend: "down", icon: CheckSquare },
+];
+
+const pipeline = [
+  { stage: "New", count: 24, value: "$96k", pct: 100, tone: "bg-indigo-500" },
+  { stage: "Qualified", count: 18, value: "$78k", pct: 75, tone: "bg-indigo-500" },
+  { stage: "Proposal", count: 12, value: "$61k", pct: 50, tone: "bg-indigo-500" },
+  { stage: "Negotiation", count: 6, value: "$34k", pct: 26, tone: "bg-indigo-500" },
+  { stage: "Won", count: 3, value: "$15k", pct: 13, tone: "bg-emerald-500" },
+];
+
+const sprints = [
+  { name: "Billing revamp", project: "Platform", done: 28, total: 34 },
+  { name: "Mobile onboarding", project: "Growth", done: 11, total: 26 },
+  { name: "CRM import tool", project: "Data", done: 19, total: 22 },
+];
+
+const conversations = [
+  { who: "Amara Okafor", company: "Brightwave Labs", msg: "Can we move the demo to Thursday?", when: "12m" },
+  { who: "Diego Marquez", company: "Northpeak Retail", msg: "Sent over the signed proposal.", when: "1h" },
+  { who: "Priya Nair", company: "Lumen Health", msg: "Question about seat pricing.", when: "3h" },
+];
+
+const activity = [
+  { who: "Sofia Rossi", action: "moved Northpeak Retail to Negotiation", when: "24m" },
+  { who: "Liam Bennett", action: "closed task Fix invoice export", when: "1h" },
+  { who: "You", action: "added 4 leads from the webinar list", when: "2h" },
+  { who: "Amara Okafor", action: "booked a call for the Billing revamp sprint", when: "5h" },
+];
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default async function Dashboard() {
   const data = await getUser();
 
   if (!data) {
-    return <div className="text-center text-gray-700 dark:text-white">No user data.</div>;
+    return <div className="text-center text-slate-600 dark:text-slate-300">No user data.</div>;
   }
 
+  const firstName = (data.first_name || data.name || "there").split(" ")[0];
+
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="max-w-4xl">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            Analytics Dashboard
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            Welcome back, {firstName}
           </h1>
-          <p className="text-blue-100 text-lg md:text-xl mb-4">
-            <span className="font-semibold bg-white/20 px-3 py-1 rounded-full text-sm">
-              {data.role}
-            </span> • Real-time insights into your team's productivity
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Here is what is moving across your pipeline and sprints today.
           </p>
-          <div className="flex items-center gap-4 text-blue-100">
-            <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              <span>Last updated: {new Date().toLocaleTimeString()}</span>
-            </div>
-          </div>
         </div>
+        <Link
+          href="/leads"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:translate-y-px dark:focus:ring-offset-slate-900"
+        >
+          <Plus className="h-4 w-4" />
+          New lead
+        </Link>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Projects</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">12</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +2 this week
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          const up = stat.trend === "up";
+          return (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-sm dark:border-slate-800 dark:bg-slate-950"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  {stat.label}
+                </span>
+                <Icon className="h-5 w-5 text-indigo-500" strokeWidth={2} />
+              </div>
+              <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
+                {stat.value}
+              </p>
+              <p
+                className={`mt-1 inline-flex items-center gap-1 text-xs font-medium ${
+                  up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                }`}
+              >
+                {up ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                {stat.delta}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-              <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Team Members</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">24</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +1 this month
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-              <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tasks Completed</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">156</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +12 today
-              </p>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-              <Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Productivity Score</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">87%</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +5% this week
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-              <Zap className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Project Progress */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Project Progress
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Website Redesign</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">85%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Mobile App</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">62%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-green-600 h-2 rounded-full" style={{ width: '62%' }}></div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">API Integration</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">43%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '43%' }}></div>
-            </div>
+      {/* Pipeline + sprints */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Pipeline */}
+        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-2 dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Sales pipeline</h3>
+            <Link href="/leads" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+              View all
+            </Link>
           </div>
-        </div>
+          <div className="mt-5 space-y-4">
+            {pipeline.map((row) => (
+              <div key={row.stage}>
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{row.stage}</span>
+                  <span className="tabular-nums text-slate-500 dark:text-slate-400">
+                    {row.count} deals · {row.value}
+                  </span>
+                </div>
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className={`h-full rounded-full ${row.tone}`} style={{ width: `${row.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Team Activity */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Team Activity
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                JD
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">John Doe</p>
-                <p className="text-xs text-gray-500">Completed 3 tasks today</p>
-              </div>
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                SM
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Sarah Miller</p>
-                <p className="text-xs text-gray-500">Working on API documentation</p>
-              </div>
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                MJ
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Mike Johnson</p>
-                <p className="text-xs text-gray-500">In a meeting</p>
-              </div>
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            </div>
+        {/* Sprints */}
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Active sprints</h3>
+            <Link href="/projects" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+              Projects
+            </Link>
           </div>
-        </div>
+          <div className="mt-5 space-y-5">
+            {sprints.map((s) => {
+              const pct = Math.round((s.done / s.total) * 100);
+              return (
+                <div key={s.name}>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{s.name}</p>
+                    <span className="tabular-nums text-xs text-slate-500 dark:text-slate-400">{pct}%</span>
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">{s.project}</p>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div className="h-full rounded-full bg-indigo-500" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="mt-1 tabular-nums text-xs text-slate-400 dark:text-slate-500">
+                    {s.done}/{s.total} tasks done
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Recent Activity
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              You completed task "Update project documentation"
-            </span>
-            <span className="text-xs text-gray-500 ml-auto">2h ago</span>
+      {/* Conversations + activity */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Conversations */}
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recent conversations</h3>
+            <Link href="/chat" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+              Open inbox
+            </Link>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              New message from John Doe in #general
-            </span>
-            <span className="text-xs text-gray-500 ml-auto">4h ago</span>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Meeting "Sprint Planning" scheduled for tomorrow
-            </span>
-            <span className="text-xs text-gray-500 ml-auto">6h ago</span>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Project "Website Redesign" reached 85% completion
-            </span>
-            <span className="text-xs text-gray-500 ml-auto">1d ago</span>
-          </div>
-        </div>
+          <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+            {conversations.map((c) => (
+              <li key={c.who} className="flex items-start gap-3 py-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                  {initials(c.who)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{c.who}</p>
+                    <span className="shrink-0 text-xs text-slate-400">{c.when}</span>
+                  </div>
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">{c.company}</p>
+                  <p className="mt-0.5 truncate text-sm text-slate-600 dark:text-slate-300">{c.msg}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Activity */}
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Team activity</h3>
+          <ul className="mt-4 space-y-4">
+            {activity.map((a, i) => (
+              <li key={i} className="flex gap-3">
+                <div className="relative flex flex-col items-center">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-indigo-500" />
+                  {i < activity.length - 1 && (
+                    <span className="mt-1 w-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                  )}
+                </div>
+                <div className="pb-1">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    <span className="font-medium text-slate-900 dark:text-white">{a.who}</span>{" "}
+                    {a.action}
+                  </p>
+                  <p className="text-xs text-slate-400">{a.when} ago</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </div>
   );

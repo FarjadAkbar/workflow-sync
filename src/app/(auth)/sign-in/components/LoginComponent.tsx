@@ -78,8 +78,8 @@ export function LoginComponent() {
         toast.error(status.error);
       }
       if (status?.ok) {
-        // console.log("Status OK");
         toast.success("Login successful");
+        router.push("/");
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -90,7 +90,6 @@ export function LoginComponent() {
       }
     } finally {
       setIsLoading(false);
-      router.push("/");
     }
   }
 

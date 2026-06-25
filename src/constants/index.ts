@@ -1,7 +1,7 @@
 // Application constants
 
-export const APP_NAME = 'WorkSync'
-export const APP_DESCRIPTION = 'A comprehensive team task management platform'
+export const APP_NAME = 'Dolce CRM'
+export const APP_DESCRIPTION = 'CRM and task management for leads, sprints, and team collaboration'
 
 // API endpoints
 export const API_ENDPOINTS = {

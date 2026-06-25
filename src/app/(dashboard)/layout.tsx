@@ -1,15 +1,13 @@
-import { redirect } from "next/navigation";
 import { Metadata } from "next";
-import { Header } from "@/components/dashboard/header";
-import { Footer } from "@/components/dashboard/footer";
+import { AppShell } from "@/components/dashboard/app-shell";
 import { getUser } from "@/lib/get-user";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL! || "http://localhost:3000"
   ),
-  title: "WorkSync - Team Task Management Platform",
-  description: "A comprehensive team task management platform with real-time collaboration, project management, team chat, file sharing, and calendar integration.",
+  title: "Dolce CRM - Leads, Sprints & Team Workspace",
+  description: "CRM and task management for leads, pipeline, sprints, tasks, and team conversations.",
   openGraph: {
     images: [
       {
@@ -44,18 +42,13 @@ export default async function AppLayout({
   }
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-        <Header
-          id={data.id}
-          name={data.name || ""}
-          email={data.email}
-          avatar={data.avatar || "/images/avatar.png"}
-        />
-
-        <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
-        <Footer />
-      </div>
-    </>
+    <AppShell
+      name={data.name || ""}
+      email={data.email}
+      avatar={data.avatar || "/images/avatar.png"}
+      role={data.role}
+    >
+      {children}
+    </AppShell>
   );
 }
