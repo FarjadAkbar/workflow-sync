@@ -6,14 +6,14 @@ import { authOptions } from "@/lib/auth";
 import { UpdateStatusPayloadType } from "@/service/users/type";
 import { ApiError } from "@/types/type";
 
-export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, props: { params: Promise<{ userId: string }> }) {
   const params = await props.params;
 
-  if (!params.id) {
+  if (!params.userId) {
     return new NextResponse("Missing id", { status: 400 });
   }
 
-  const id = params.id;
+  const id = params.userId;
 
   try {
     const user = await prismadb.users.findMany({
