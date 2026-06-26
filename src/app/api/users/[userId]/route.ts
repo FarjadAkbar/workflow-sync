@@ -29,21 +29,21 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function DELETE(req: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
   try {
     await Promise.all([
-      prismadb.taskAssignee.deleteMany({ where: { userId: id } }),
-      prismadb.projectMember.deleteMany({ where: { userId: id } }),
-      prismadb.chatRoom.deleteMany({ where: { createdBy: id } }),
-      prismadb.chatParticipant.deleteMany({ where: { userId: id } }),
-      prismadb.chatMessage.deleteMany({ where: { senderId: id } }),
-      prismadb.availability.deleteMany({ where: { userId: id } }),
-      prismadb.fileShare.deleteMany({ where: { sharedWithId: id } }),
+      prismadb.taskAssignee.deleteMany({ where: { userId } }),
+      prismadb.projectMember.deleteMany({ where: { userId } }),
+      prismadb.chatRoom.deleteMany({ where: { createdBy: userId } }),
+      prismadb.chatParticipant.deleteMany({ where: { userId } }),
+      prismadb.chatMessage.deleteMany({ where: { senderId: userId } }),
+      prismadb.availability.deleteMany({ where: { userId } }),
+      prismadb.fileShare.deleteMany({ where: { sharedWithId: userId } }),
     ]);
-    
+
     // Delete user after related records are removed
-    const user = await prismadb.users.delete({ where: { id } });
+    const user = await prismadb.users.delete({ where: { id: userId } });
     
     return NextResponse.json({ message: "User Deleted", user: user }, { status: 200 });
   } catch (error: unknown) {
@@ -58,15 +58,15 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
 export async function PUT(
   req: Request,
-  props: { params: Promise<{ id: string }> }
+  props: { params: Promise<{ userId: string }> }
 ) {
   const params = await props.params;
 
-  if (!params.id) {
+  if (!params.userId) {
     return new NextResponse("Missing id", { status: 400 });
   }
 
-  const id = params.id;
+  const id = params.userId;
   try {
     const body: UpdateStatusPayloadType = await req.json();
     const user = await prismadb.users.update({
